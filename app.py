@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 
@@ -22,10 +23,6 @@ def index():
     return render_template("index.html", messages=reversed(messages))
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
-import os
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, host="0.0.0.0", port=port)
+    # Heroku assigns a dynamic port, so we need to use it
+    port = int(os.environ.get("PORT", 5000))  # Default to 5000 if not found
+    app.run(debug=False, host="0.0.0.0", port=port)  # Listen on all IPs and use the dynamic port
