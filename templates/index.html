@@ -3,97 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Message Board with Replies and Notifications</title>
-    <!-- Tailwind CSS via CDN -->
+    <title>Enhanced Message Board</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
-    <!-- Alpine.js for interactivity -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.x.x/dist/alpine.min.js" defer></script>
 </head>
-<body class="bg-gray-900 text-white font-sans min-h-screen flex items-center justify-center">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Title -->
-        <h1 class="text-4xl font-bold text-center text-blue-400 mb-8">Message Board</h1>
+<body class="bg-gray-900 text-white">
+    <div class="container mx-auto py-8">
+        <h1 class="text-4xl font-bold text-center text-blue-400 mb-8">Enhanced Message Board</h1>
 
-        <!-- Form to Post Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div>
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% if session.get("user_id") %}
+            <p>Welcome, <a href="{{ url_for('profile', username=session.get('username')) }}" class="text-blue-400">{{ session.get("username") }}</a>! | <a href="{{ url_for('logout') }}" class="text-blue-400">Logout</a></p>
+        {% else %}
+            <p><a href="{{ url_for('login') }}" class="text-blue-400">Login</a> or <a href="{{ url_for('register') }}" class="text-blue-400">Register</a> to have a profile.</p>
+        {% endif %}
+
         <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-            <form x-data="{ username: '', content: '', reply_to: '' }" @submit.prevent="postMessage()">
-                <input type="text" placeholder="Your name (optional)" x-model="username"
-                    class="w-full p-3 mb-4 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <textarea placeholder="Leave a message..." x-model="content"
-                    class="w-full p-3 mb-4 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400" required></textarea>
-                <input type="hidden" x-model="reply_to">
+            <form method="POST" action="/">
+                {% if session.get("user_id") %}
+                    <p>Posting as <strong>{{ session.get("username") }}</strong></p>
+                {% else %}
+                    <p>Posting as <strong>Anonymous</strong></p>
+                {% endif %}
+                <textarea name="content" placeholder="Leave a message..." required
+                    class="w-full p-3 mb-4 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
                 <button type="submit" class="w-full py-3 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Post</button>
             </form>
         </div>
 
-        <!-- Message List -->
-        <div class="space-y-4" x-data="{ messages: [], notifications: 0 }" x-init="fetchMessages()">
-            <template x-for="message in messages" :key="message.id">
+        <div class="space-y-4">
+            {% for message in messages %}
                 <div class="bg-gray-800 rounded-lg shadow-md p-4">
                     <p class="text-sm text-gray-400">
-                        <span class="font-bold text-blue-300" x-text="message.username || 'Anonymous'"></span> 
-                        at <span x-text="message.timestamp"></span>:
+                        <span class="font-bold text-blue-300">{{ message.author.username if message.author else 'Anonymous' }}</span> 
+                        at {{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}:
                     </p>
-                    <p class="mt-2" x-text="message.content"></p>
-                    <button @click="reply_to = message.id; document.querySelector('textarea').focus();" class="text-blue-400 text-sm mt-2">Reply</button>
+                    <p class="mt-2">{{ message.content }}</p>
 
-                    <!-- Replies -->
-                    <div class="mt-4 pl-6" x-show="message.replies.length">
-                        <h3 class="text-sm text-gray-300">Replies:</h3>
-                        <template x-for="reply in message.replies" :key="reply.timestamp">
-                            <div class="bg-gray-700 rounded-lg p-2 mt-2">
-                                <p class="text-xs text-gray-400">
-                                    <span class="font-bold text-blue-200" x-text="reply.username || 'Anonymous'"></span>
-                                    at <span x-text="reply.timestamp"></span>:
-                                </p>
-                                <p class="mt-1 text-sm" x-text="reply.content"></p>
-                            </div>
-                        </template>
-                    </div>
+                    <form method="POST" action="{{ url_for('like', message_id=message.id) }}" class="inline">
+                        <button type="submit" class="text-blue-400">Like ({{ message.likes }})</button>
+                    </form>
+
+                    {% if session.get("user_id") %}
+                        <form method="POST" action="{{ url_for('reply', message_id=message.id) }}" class="mt-4">
+                            <textarea name="content" placeholder="Reply..." required
+                                class="w-full p-3 mb-2 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+                            <button type="submit" class="w-full py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Reply</button>
+                        </form>
+                    {% endif %}
                 </div>
-            </template>
-            <p class="text-gray-500" x-show="messages.length === 0">No messages yet. Be the first to post!</p>
-        </div>
-
-        <!-- Notifications -->
-        <div x-show="notifications > 0" class="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-full shadow-lg">
-            <p x-text="`${notifications} new message(s)`"></p>
+            {% endfor %}
         </div>
     </div>
-
-    <script>
-        // Alpine.js - handles posting and displaying messages
-        function postMessage() {
-            let username = this.username.trim() || "Anonymous";
-            let content = this.content.trim();
-            let reply_to = this.reply_to;
-            if (content) {
-                let timestamp = new Date().toLocaleString();
-                let message = { id: this.messages.length + 1, username, content, timestamp, replies: [] };
-                if (reply_to) {
-                    // Add as a reply
-                    let parentMessage = this.messages.find(msg => msg.id == reply_to);
-                    if (parentMessage) {
-                        parentMessage.replies.push(message);
-                    }
-                } else {
-                    // Add as a new message
-                    this.messages.unshift(message);
-                }
-                this.username = '';
-                this.content = '';
-                this.reply_to = '';
-                this.notifications++;
-            }
-        }
-
-        function fetchMessages() {
-            this.messages = [
-                { id: 1, username: 'User1', content: 'Hello world!', timestamp: '2024-11-14 12:00:00', replies: [] },
-                { id: 2, username: 'User2', content: 'This is a message board.', timestamp: '2024-11-14 12:01:00', replies: [] }
-            ];
-            this.notifications = 0;
-        }
-    </script>
 </body>
 </html>
