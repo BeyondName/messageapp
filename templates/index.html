@@ -4,64 +4,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enhanced Message Board</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
-<body class="bg-gray-900 text-white">
-    <div class="container mx-auto py-8">
-        <h1 class="text-4xl font-bold text-center text-blue-400 mb-8">Enhanced Message Board</h1>
+<body>
+    <header>
+        <h1>Enhanced Message Board</h1>
+        <nav>
+            <a href="{{ url_for('login') }}">Login</a> |
+            <a href="{{ url_for('register') }}">Register</a>
+        </nav>
+    </header>
+    <main>
+        <h2>Leave a Message</h2>
+        <form method="POST" action="{{ url_for('index') }}">
+            <input type="text" name="username" placeholder="Your name (optional)">
+            <textarea name="content" placeholder="Leave a message..."></textarea>
+            <button type="submit">Post</button>
+        </form>
 
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div>
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        {% if session.get("user_id") %}
-            <p>Welcome, <a href="{{ url_for('profile', username=session.get('username')) }}" class="text-blue-400">{{ session.get("username") }}</a>! | <a href="{{ url_for('logout') }}" class="text-blue-400">Logout</a></p>
+        <h2>Messages</h2>
+        {% for message in messages %}
+            <div class="message">
+                <p><strong>{{ message.username }}</strong> - {{ message.timestamp }}</p>
+                <p>{{ message.content }}</p>
+                <p>Likes: {{ message.likes }}</p>
+                <!-- Form for liking a message -->
+                <form method="POST" action="{{ url_for('like_message', message_id=message.id) }}">
+                    <button type="submit">Like</button>
+                </form>
+            </div>
         {% else %}
-            <p><a href="{{ url_for('login') }}" class="text-blue-400">Login</a> or <a href="{{ url_for('register') }}" class="text-blue-400">Register</a> to have a profile.</p>
-        {% endif %}
-
-        <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
-            <form method="POST" action="/">
-                {% if session.get("user_id") %}
-                    <p>Posting as <strong>{{ session.get("username") }}</strong></p>
-                {% else %}
-                    <p>Posting as <strong>Anonymous</strong></p>
-                {% endif %}
-                <textarea name="content" placeholder="Leave a message..." required
-                    class="w-full p-3 mb-4 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
-                <button type="submit" class="w-full py-3 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Post</button>
-            </form>
-        </div>
-
-        <div class="space-y-4">
-            {% for message in messages %}
-                <div class="bg-gray-800 rounded-lg shadow-md p-4">
-                    <p class="text-sm text-gray-400">
-                        <span class="font-bold text-blue-300">{{ message.author.username if message.author else 'Anonymous' }}</span> 
-                        at {{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}:
-                    </p>
-                    <p class="mt-2">{{ message.content }}</p>
-
-                    <form method="POST" action="{{ url_for('like', message_id=message.id) }}" class="inline">
-                        <button type="submit" class="text-blue-400">Like ({{ message.likes }})</button>
-                    </form>
-
-                    {% if session.get("user_id") %}
-                        <form method="POST" action="{{ url_for('reply', message_id=message.id) }}" class="mt-4">
-                            <textarea name="content" placeholder="Reply..." required
-                                class="w-full p-3 mb-2 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
-                            <button type="submit" class="w-full py-2 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">Reply</button>
-                        </form>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-    </div>
+            <p>No messages yet. Be the first to post!</p>
+        {% endfor %}
+    </main>
+    <footer>
+        <p>&copy; 2024 Enhanced Message Board App</p>
+    </footer>
 </body>
 </html>
