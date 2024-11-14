@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
+    <title>Register</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-900 text-white h-screen flex items-center justify-center">
     <div class="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">Login</h1>
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-400">Register</h1>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -20,7 +20,7 @@
             {% endif %}
         {% endwith %}
 
-        <form method="POST" action="{{ url_for('login') }}">
+        <form method="POST" action="{{ url_for('register') }}">
             <div class="mb-4">
                 <label for="username" class="block text-sm mb-2">Username</label>
                 <input type="text" id="username" name="username" required
@@ -32,12 +32,12 @@
                        class="w-full p-3 rounded bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400">
             </div>
             <button type="submit" class="w-full py-3 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
-                Login
+                Register
             </button>
         </form>
 
         <p class="mt-6 text-center">
-            Don't have an account? <a href="{{ url_for('register') }}" class="text-blue-400">Register here</a>.
+            Already have an account? <a href="{{ url_for('login') }}" class="text-blue-400">Login here</a>.
         </p>
     </div>
 </body>

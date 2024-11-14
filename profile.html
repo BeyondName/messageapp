@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.0.0/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+    <div class="container mx-auto py-8">
+        <h1 class="text-4xl font-bold text-center text-blue-400 mb-8">{{ user.username }}'s Profile</h1>
+
+        <!-- Notifications Section -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-2xl font-bold text-blue-400 mb-4">Notifications</h2>
+            {% if notifications %}
+                <ul>
+                    {% for notification in notifications %}
+                        <li class="bg-gray-700 p-3 rounded mb-2">{{ notification.message }} - {{ notification.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</li>
+                    {% endfor %}
+                </ul>
+                <form method="POST" action="{{ url_for('clear_notifications') }}">
+                    <button type="submit" class="w-full py-2 mt-4 bg-blue-500 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                        Clear Notifications
+                    </button>
+                </form>
+            {% else %}
+                <p>No notifications.</p>
+            {% endif %}
+        </div>
+
+        <!-- User Messages Section -->
+        <div class="bg-gray-800 rounded-lg shadow-lg p-6">
+            <h2 class="text-2xl font-bold text-blue-400 mb-4">Your Messages</h2>
+            {% if messages %}
+                <ul>
+                    {% for message in messages %}
+                        <li class="bg-gray-700 p-4 rounded mb-4">
+                            <p class="text-sm text-gray-400">Posted on {{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p class="mt-2">{{ message.content }}</p>
+                            <div class="mt-2 text-sm text-gray-400">Likes: {{ message.likes }}</div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>You haven't posted any messages yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Back to Home Link -->
+        <div class="text-center mt-8">
+            <a href="{{ url_for('index') }}" class="text-blue-400 hover:underline">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>
