@@ -132,9 +132,8 @@ def reply_message(message_id):
         flash("You must be logged in to reply to messages.", "danger")
     return redirect(url_for("index"))
 
-# Database initialization
-@app.before_first_request
-def create_tables():
+# Database initialization moved here
+with app.app_context():
     db.create_all()
 
 # Run the application
